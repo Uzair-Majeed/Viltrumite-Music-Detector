@@ -76,9 +76,13 @@ button {
   }
 }
 
-/* Scrollbar */
+/* Scrollbar - Hidden for premium feel */
 ::-webkit-scrollbar {
-  width: 8px;
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 @keyframes gradient {

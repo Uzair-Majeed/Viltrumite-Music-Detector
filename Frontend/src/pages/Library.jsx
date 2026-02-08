@@ -37,7 +37,7 @@ const Library = () => {
 
     const [stats, setStats] = useState({ total: 0 });
     const [page, setPage] = useState(1);
-    const limit = 10;
+    const limit = 7;
 
     // Use a ref to track the latest fetch to avoid race conditions
     const fetchIdRef = useRef(0);

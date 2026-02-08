@@ -19,7 +19,7 @@ const AuthPage = ({ onAuthSuccess, onNotify }) => {
         e.preventDefault();
         setLoading(true);
 
-        const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/signup`;
+        const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/register`;
         const payload = isLogin ? { email, password } : { name, email, password };
 
         try {
