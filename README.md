@@ -4,6 +4,13 @@ Viltrumite is a next-generation music discovery engine designed to identify trac
 
 ---
 
+## 🌐 Live Deployments
+
+- **Frontend (UI)**: [https://viltrumite-music-detector.vercel.app/](https://viltrumite-music-detector.vercel.app/)
+- **Backend (API)**: [https://viltrumite-music-detector.onrender.com](https://viltrumite-music-detector.onrender.com)
+
+---
+
 ## 🚀 Key Features
 
 - **Instant Recognition**: Identify any playing track in under 2 seconds.
@@ -30,6 +37,16 @@ Viltrumite is a next-generation music discovery engine designed to identify trac
 - **Language**: Python 3
 - **Processing**: Librosa, NumPy, SciPy
 - **Fingerprinting**: Delta-Time Combinatorial Hashing
+
+---
+
+## 🏗️ Deployment Strategy
+
+Viltrumite uses a **Split Deployment** architecture to leverage the strengths of different platforms:
+
+- **Frontend (Vercel)**: Served as a high-performance static site with global edge distribution.
+- **Backend (Render)**: Hosted as a Dockerized web service to support the Python AI core and FFmpeg dependencies.
+- **Communication**: Seamlessly connected via absolute API URLs and environment variable configuration (`VITE_API_URL`).
 
 ---
 
