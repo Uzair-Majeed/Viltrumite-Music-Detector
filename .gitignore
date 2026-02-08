@@ -10,8 +10,9 @@ __pycache__/
 AI-Module/temp_downloads/
 
 # Databases & Sensitive Data
-Databases/
-*.db
+# We un-ignored these so they can be tracked via Git LFS
+# Databases/
+# *.db
 .env
 auth_token.json
 

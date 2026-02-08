@@ -40,9 +40,7 @@ ENV AI_MODULE_CORE=/app/AI-Module/Core
 ENV PYTHON_FALLBACK=/app/AI-Module/Inference/fallback.py
 ENV PYTHON_USER_ADDER=/app/AI-Module/Training/user_adder.py
 
-# Explicitly indicate volume paths for persistence
-VOLUME ["/app/Databases"]
-
+# Explicitly indicate paths (removed VOLUME to prevent masking on non-persistent tiers)
 EXPOSE 3000
 
 CMD ["npm", "start"]

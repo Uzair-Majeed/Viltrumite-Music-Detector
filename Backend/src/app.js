@@ -24,6 +24,30 @@ app.get('/health', (req, res) => {
     });
 });
 
+// DEBUG: Check Database File Size
+app.get('/debug-db', (req, res) => {
+    const fs = require('fs');
+    const path = require('path');
+    const dbPath = process.env.DB_SONGS || '/app/Databases/songs.db';
+
+    try {
+        if (fs.existsSync(dbPath)) {
+            const stats = fs.statSync(dbPath);
+            res.json({
+                exists: true,
+                path: dbPath,
+                sizeBytes: stats.size,
+                sizeMB: (stats.size / (1024 * 1024)).toFixed(2),
+                lastModified: stats.mtime
+            });
+        } else {
+            res.json({ exists: false, path: dbPath });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // global error handler
 app.use((error, req, res, next) => {
     res.status(error.status || 500).json({
