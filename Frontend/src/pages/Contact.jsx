@@ -64,7 +64,7 @@ const Contact = () => {
                     >
                         <div className="flex items-center gap-4 mb-8">
                             <div className="p-3 rounded-2xl">
-                                <img src="../public/Viltrumite_Logo.png" alt="Logo" className="w-12 h-12" />
+                                <img src="/Logos/Viltrumite_Logo2.png" alt="Logo" className="w-12 h-12" />
                             </div>
                             <h3 className="text-2xl font-bold text-white">Send a Message</h3>
                         </div>

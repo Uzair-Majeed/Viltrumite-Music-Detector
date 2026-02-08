@@ -4,13 +4,19 @@ import { Music, Github, Mail, Linkedin } from 'lucide-react';
 
 const Footer = () => {
     return (
-        <footer className="w-full bg-[#0f172a] border-t border-white/5 pt-20 pb-10 px-6 relative z-10">
+        <footer
+            className="w-full border-t border-white/5 pt-20 pb-10 px-6 relative z-10"
+            style={{
+                background: '#241f1f',
+                backgroundImage: 'linear-gradient(90deg, rgba(36, 31, 31, 1) 0%, rgba(74, 49, 115, 1) 50%, rgba(36, 31, 31, 1) 100%)'
+            }}
+        >
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                 {/* Brand */}
                 <div className="space-y-6">
                     <Link to="/" className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#ec4899]">
-                            <Music className="w-5 h-5 text-white" />
+                        <div className="p-2 rounded-xl">
+                            <img src="/Logos/Viltrumite_Logo2.png" alt="Viltrumite Logo" style={{ width: '40px', height: '40px' }} />
                         </div>
                         <span className="text-xl font-black tracking-tighter text-white">Viltrumite</span>
                     </Link>
@@ -36,7 +42,7 @@ const Footer = () => {
                     <ul className="space-y-4">
                         <li><Link to="/recognize" className="text-sm text-[#94a3b8] hover:text-[#8b5cf6] transition-colors">Start Recognition</Link></li>
                         <li><Link to="/library" className="text-sm text-[#94a3b8] hover:text-[#8b5cf6] transition-colors">Music Library</Link></li>
-                        <li><Link to="/trending" className="text-sm text-[#94a3b8] hover:text-[#8b5cf6] transition-colors">New Discoveries</Link></li>
+                        <li><Link to="/" className="text-sm text-[#94a3b8] hover:text-[#8b5cf6] transition-colors">New Discoveries</Link></li>
                     </ul>
                 </div>
 
@@ -53,7 +59,7 @@ const Footer = () => {
                 {/* Contact */}
                 <div>
                     <h4 className="text-white font-bold mb-6">Stay Tuned</h4>
-                    <p className="text-sm text-[#94a3b8] mb-4">Get updates on new Pakistani tracks added to our DB.</p>
+                    <p className="text-sm text-[#94a3b8] mb-4">Get updates on new tracks added to our DB.</p>
                     <div className="flex gap-2">
                         <input
                             type="email"
@@ -69,7 +75,7 @@ const Footer = () => {
 
             <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                 <p className="text-xs text-[#64748b]">
-                    © 2024 Viltrumite AI. All rights reserved. Built with precision and passion.
+                    © 2026 Viltrumite Music Detector. All rights reserved. Built with precision and passion.
                 </p>
                 <div className="flex gap-8">
                     <a href="#" className="text-xs text-[#64748b] hover:text-white transition-colors">Privacy Policy</a>

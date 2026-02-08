@@ -19,9 +19,9 @@ const Notification = ({ notification, onClose }) => {
                     initial={{ opacity: 0, y: -50, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                    className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] min-w-[320px]"
+                    className="fixed top-10 inset-x-0 flex justify-center z-[9999] pointer-events-none"
                 >
-                    <div className="p-1.5 rounded-2xl bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center gap-4 pr-12">
+                    <div className="p-1.5 rounded-2xl bg-white border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center gap-4 pr-12 pointer-events-auto min-w-[320px] relative">
                         <div className={`p-3 rounded-xl ${notification.type === 'success' ? 'bg-emerald-50' : 'bg-rose-50'}`}>
                             {notification.type === 'success' ? (
                                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />

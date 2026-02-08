@@ -17,6 +17,8 @@ def get_video_info(url):
     try:
         cmd = [
             'yt-dlp',
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            '--add-header', 'Accept-Language: en-US,en;q=0.9',
             '--get-duration',
             '--get-title',
             '--simulate',
@@ -53,8 +55,7 @@ def main():
     parser = argparse.ArgumentParser(description="Manually add a song from YouTube URL")
     parser.add_argument('url', help="YouTube URL to index")
     parser.add_argument('--genre', default="User Contributed", help="Genre label")
-    default_db = os.path.join(os.path.dirname(__file__), '..', '..', 'Databases', 'songs.db')
-    parser.add_argument('--db', default=default_db, help="Path to database")
+    parser.add_argument('--db', help="Path to database")
     
     args = parser.parse_args()
     
@@ -81,21 +82,12 @@ def main():
     
     try:
         # Download, Fingerprint, Index
-        file_path, thumb, d_title, artist = indexer.download_audio(args.url)
-        if not file_path:
-            print(json.dumps({"success": False, "error": "Download failed"}))
-            return
-            
         success = indexer.process_and_index(
-            file_path, 
-            url=args.url, 
-            genre=args.genre, 
-            thumbnail=thumb, 
-            title=d_title or title, 
-            artist=artist
+            args.url, 
+            genre=args.genre
         )
         
-        indexer.cleanup_file(file_path)
+        # indexer.cleanup_file is now handled internally in process_and_index
         
         if success:
             print(json.dumps({

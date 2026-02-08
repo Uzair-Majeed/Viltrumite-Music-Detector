@@ -5,9 +5,9 @@ import hashlib
 class Fingerprinter:
     def __init__(self):
         # Configuration for peak finding
-        self.fan_value = 5           # Reduced from 8 to further reduce density
-        self.amp_min = 30            # Increased from 15 to focus on much louder peaks
-        self.neighborhood_size = 20  # Size of the neighborhood for local maxima
+        self.fan_value = 6           # Slightly increased from 5
+        self.amp_min = 20            # Reduced from 30 to capture more peaks
+        self.neighborhood_size = 15  # Reduced from 20 for more granularity
 
     def get_2d_peaks(self, spectrogram):
         """

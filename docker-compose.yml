@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Databases:/app/Databases
+      - ./uploads:/app/uploads
+      - ./AI-Module/temp_downloads:/app/AI-Module/temp_downloads
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET:-viltrumite_fallback_secret}
+    restart: always
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

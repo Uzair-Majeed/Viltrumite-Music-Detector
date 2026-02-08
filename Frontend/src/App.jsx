@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Notification from './components/Notification';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
@@ -67,6 +68,7 @@ function App() {
       )}
 
       <Header user={user} onLogout={handleLogout} />
+      <ScrollToTop />
 
       <main className="relative z-10">
         <Routes>

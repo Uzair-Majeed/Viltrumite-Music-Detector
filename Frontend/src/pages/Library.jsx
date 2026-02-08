@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Library as LibraryIcon, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
-import MagicBento from '../components/MagicBento';
+import { Search, Library as LibraryIcon, ChevronLeft, ChevronRight, Youtube } from 'lucide-react';
 import Lightning from '../components/Lightning';
+import ScrollStack, { ScrollStackItem } from '../components/ScrollStack';
 
-const MagicBentoSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 max-w-[54em] mx-auto p-3">
-        {[...Array(14)].map((_, i) => (
+const ScrollStackSkeleton = () => (
+    <div className="max-w-4xl mx-auto space-y-8 py-20">
+        {[...Array(5)].map((_, i) => (
             <div
                 key={i}
-                className={`aspect-[4/3] rounded-[20px] bg-white/5 border border-white/5 animate-pulse overflow-hidden relative
-                    ${i === 2 ? 'col-span-1 lg:col-span-2 lg:row-span-2' : ''}
-                    ${i === 3 ? 'col-span-1 lg:col-span-2 lg:row-span-2' : ''}
-                    ${i === 5 ? 'col-span-1 lg:col-span-1 lg:grid-column-4 lg:grid-row-3' : ''}
-                `}
+                className="w-full h-[28rem] rounded-[40px] bg-white/5 border border-white/10 animate-pulse relative overflow-hidden"
             >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
-                <div className="absolute bottom-5 left-5 right-5 space-y-2">
-                    <div className="h-6 bg-white/10 rounded-md w-3/4" />
-                    <div className="h-4 bg-white/5 rounded-md w-1/2" />
+                <div className="absolute bottom-10 left-10 right-10 space-y-4">
+                    <div className="h-4 bg-white/10 rounded-full w-24" />
+                    <div className="h-10 bg-white/10 rounded-xl w-3/4" />
+                    <div className="h-6 bg-white/5 rounded-lg w-1/2" />
                 </div>
             </div>
         ))}
@@ -31,16 +28,25 @@ const Library = () => {
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedGenre, setSelectedGenre] = useState('All');
+
+    // Initialize genre from URL immediately to avoid double fetch
+    const [selectedGenre, setSelectedGenre] = useState(() => {
+        return searchParams.get('genre') || 'All';
+    });
+
     const [stats, setStats] = useState({ total: 0 });
     const [page, setPage] = useState(1);
-    const limit = 14;
+    const limit = 10;
 
-    // Initialize genre from URL
+    // Use a ref to track the latest fetch to avoid race conditions
+    const fetchIdRef = useRef(0);
+
+    // Sync genre from URL changes (if any)
     useEffect(() => {
         const genreParam = searchParams.get('genre');
-        if (genreParam) {
+        if (genreParam && genreParam !== selectedGenre) {
             setSelectedGenre(genreParam);
+            setPage(1);
         }
     }, [searchParams]);
 
@@ -49,26 +55,40 @@ const Library = () => {
         setPage(1);
     }, [selectedGenre]);
 
+    // Ensure scroll to top
     useEffect(() => {
-        fetchSongs();
-    }, [page, selectedGenre]);
+        if (!loading && songs.length > 0) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+    }, [songs, loading]);
 
     const fetchSongs = async () => {
+        const currentFetchId = ++fetchIdRef.current;
         setLoading(true);
         const offset = (page - 1) * limit;
         try {
             const response = await fetch(`/api/songs?limit=${limit}&offset=${offset}&genre=${encodeURIComponent(selectedGenre)}&search=${encodeURIComponent(searchQuery)}`);
             const data = await response.json();
-            if (data.songs) {
-                setSongs(data.songs);
-                setStats({ total: data.total });
+
+            // Only update state if this is still the latest fetch
+            if (currentFetchId === fetchIdRef.current) {
+                if (data.songs) {
+                    setSongs(data.songs);
+                    setStats({ total: data.total });
+                }
+                setLoading(false);
             }
         } catch (error) {
             console.error('Failed to fetch songs:', error);
-        } finally {
-            setLoading(false);
+            if (currentFetchId === fetchIdRef.current) {
+                setLoading(false);
+            }
         }
     };
+
+    useEffect(() => {
+        fetchSongs();
+    }, [page, selectedGenre]);
 
     // Debounced search
     useEffect(() => {
@@ -82,12 +102,12 @@ const Library = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const genres = ['All','Pop','Hip-Hop','Anime','Rap','Phonk','R&B','Jazz','Blues','Classical','Electronic','Dance','EDM','House','Techno','Trance','Dubstep','Drum & Bass','Reggae','Latin','K-Pop','Indie'];
+    const genres = ['All', 'Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'R&B', 'Jazz', 'Blues', 'Classical', 'Electronic', 'Dance', 'EDM', 'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Reggae', 'Latin', 'K-Pop', 'Indie'];
 
     const totalPages = Math.ceil(stats.total / limit);
 
     return (
-        <div className="pt-24 min-h-screen relative">
+        <div className="pt-24 min-h-screen relative overflow-x-hidden">
             <Lightning
                 hue={200}
                 xOffset={0}
@@ -139,32 +159,66 @@ const Library = () => {
                     ))}
                 </div>
 
-                {/* Magic Bento Grid */}
+                {/* ScrollStack / Magic Bento */}
                 {loading ? (
-                    <MagicBentoSkeleton />
+                    <ScrollStackSkeleton />
                 ) : (
                     <>
-                        <div className="mb-12">
-                            <MagicBento
-                                items={songs}
-                                textAutoHide={false}
-                                enableStars={true}
-                                enableSpotlight={true}
-                                enableBorderGlow={true}
-                                enableTilt={true}
-                                enableMagnetism={true}
-                                clickEffect={true}
-                                spotlightRadius={300}
-                                particleCount={12}
-                                glowColor="132, 0, 255"
-                                disableAnimations={false}
-                            />
+                        <div className="mb-12 min-h-[60vh]">
+
+                            <ScrollStack
+                                useWindowScroll={true}
+                                stackPosition="10%"
+                                itemStackDistance={20}
+                            >
+                                {songs.map((song, index) => (
+                                    <ScrollStackItem key={song.id || index}>
+                                        <div
+                                            className="absolute inset-0 rounded-[40px] overflow-hidden bg-cover bg-center"
+                                            style={{ backgroundImage: `url(${song.thumbnail || song.image})` }}
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
+                                            <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                                                <div className="flex justify-between items-end gap-6">
+                                                    <div className="flex-1">
+                                                        <span className="inline-block px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] font-bold text-[#8b5cf6] border border-white/10 mb-4 uppercase tracking-wider">
+                                                            {song.genre || 'Music'}
+                                                        </span>
+                                                        <h2 className="text-4xl font-black text-white tracking-tighter mb-2 line-clamp-1">
+                                                            {song.title || song.name}
+                                                        </h2>
+                                                        <p className="text-xl text-white/70 font-medium">
+                                                            {song.artist || 'Unknown Artist'}
+                                                        </p>
+                                                    </div>
+
+                                                    <a
+                                                        href={song.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold transition-all shadow-xl shadow-red-900/40 hover:scale-105 active:scale-95"
+                                                    >
+                                                        <Youtube className="w-6 h-6" />
+                                                        Listen Now
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ScrollStackItem>
+                                ))}
+                            </ScrollStack>
+
+
                         </div>
 
                         {/* Pagination Controls */}
-                        <div className="flex justify-center items-center gap-4 mt-16">
+                        <div className="flex justify-center items-center gap-4 mt-16 relative z-50">
                             <button
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                onClick={() => {
+                                    setPage(p => Math.max(1, p - 1));
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
                                 disabled={page === 1}
                                 className="p-3 rounded-xl bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-all"
                             >
@@ -174,7 +228,10 @@ const Library = () => {
                                 Page {page} of {totalPages || 1}
                             </span>
                             <button
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                onClick={() => {
+                                    setPage(p => Math.min(totalPages, p + 1));
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
                                 disabled={page === totalPages}
                                 className="p-3 rounded-xl bg-white/5 border border-white/10 text-white disabled:opacity-50 hover:bg-white/10 transition-all"
                             >
@@ -201,3 +258,4 @@ const Library = () => {
 };
 
 export default Library;
+

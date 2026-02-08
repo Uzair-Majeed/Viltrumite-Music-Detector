@@ -67,13 +67,15 @@ async def recognize_workflow(audio_path, db_path="songs.db", return_top_n=3):
     print(f"[*] Starting parallel recognition (Audio-based Local + Shazam)...", file=sys.stderr)
     
     # 1. Local Search (Checks your songs.db fingerprints)
-    local_result = recognizer.recognize(audio_path, return_top_n=return_top_n, min_confidence=0)
+    # We request top 10 internally to ensure we have enough variety to find unique library matches 
+    # even if Shazam finds the primary song.
+    local_result = recognizer.recognize(audio_path, return_top_n=10, min_confidence=0)
     local_matches = local_result.get('matches', [])
     
     # 2. Shazam Search (Checks Shazam's global database)
     shazam_match = None
     try:
-        shazam_out = await shazam.recognize_song(audio_path)
+        shazam_out = await shazam.recognize(audio_path)
         if shazam_out and shazam_out.get('track'):
             track = shazam_out['track']
             images = track.get('images', {})
@@ -118,21 +120,35 @@ async def recognize_workflow(audio_path, db_path="songs.db", return_top_n=3):
         print(f"[!] No match found in local database or Shazam.", file=sys.stderr)
         message = "Song not found in your local database or Shazam."
 
-    # Combine lists (Shazam first, then local unique hits)
+    # Combine lists (Prefer Shazam first, then unique local hits)
     all_results = []
+    seen_titles = set()
+
     if shazam_match:
         all_results.append(shazam_match)
+        seen_titles.add(shazam_match['title'].lower())
     
     for local in local_matches:
-        # Skip if it's the same song Shazam already found (to avoid duplication)
-        if shazam_match and is_similar(shazam_match['title'], local['title'], threshold=0.9):
-            continue
-        all_results.append(local)
+        # Check if we already have a similar song in the list (usually Shazam)
+        is_duplicate = False
+        for seen in seen_titles:
+            if is_similar(seen, local['title'], threshold=0.85):
+                is_duplicate = True
+                break
+        
+        if not is_duplicate:
+            # Mark as library match for the frontend
+            local['is_shazam_match'] = False
+            all_results.append(local)
+            seen_titles.add(local['title'].lower())
+
+    # Sort results: Shazam matches (100% confidence typically) vs Local
+    # all_results.sort(key=lambda x: x.get('confidence', 0), reverse=True)
 
     return {
         "success": True,
         "match_found": match_found,
-        "matches": all_results,
+        "matches": all_results[:3], # Strictly follow user's "3 matches required"
         "shazam_discovery": should_index,
         "message": message
     }

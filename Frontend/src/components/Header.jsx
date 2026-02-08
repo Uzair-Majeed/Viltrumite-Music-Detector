@@ -24,7 +24,7 @@ const Header = ({ user, onLogout }) => {
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-3 group">
                     <div className="p-2.5 rounded-2xl group-hover:scale-110 transition-transform">
-                        <img src="../public/Viltrumite_Logo.png" alt="Viltrumite Logo" style={{ width: '24px', height: '24px' }} />
+                        <img src="/Logos/Viltrumite_Logo.jpg" alt="Viltrumite Logo" style={{ width: '40px', height: '40px' }} />
                     </div>
                     <span className="text-2xl font-black tracking-tighter text-white">Viltrumite</span>
                 </Link>

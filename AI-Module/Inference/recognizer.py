@@ -28,7 +28,7 @@ class SongRecognizer:
         self.fingerprinter = Fingerprinter()
         self.db = DatabaseHandler(db_path)
     
-    def recognize(self, audio_file_path, return_top_n=3, min_confidence=20.0):
+    def recognize(self, audio_file_path, return_top_n=3, min_confidence=0.1):
         """
         Recognize a song from an audio file.
         

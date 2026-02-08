@@ -11,31 +11,31 @@ const FAQ = () => {
         {
             text: "How does Viltrumite identify music?",
             answer: "We use advanced acoustic fingerprinting technology. When you record audio, our system converts it into a spectrogram and extracts unique mathematical markers. This 'fingerprint' is then compared against our massive database of indexed tracks to find a precise match in seconds.",
-            image: "/faq/tech.jpg",
+            image: "/FAQS/tech.jpg",
             link: "#"
         },
         {
             text: "Why is there a usage limit?",
             answer: "To ensure the highest quality of service and prevent automated abuse, we limit guest usage to 3 recognitions. Creating a free account unlocks unlimited access, allowing you to build your personal discovery library and save your history.",
-            image: "/faq/security.jpg",
+            image: "/FAQS/security.jpg",
             link: "#"
         },
         {
             text: "Can I contribute to the database?",
             answer: "Yes! Community contributions are vital. If our system fails to recognize a song, authenticated users can provide a YouTube link. Our backend will automatically analyze, fingerprint, and index that song so it becomes discoverable for everyone.",
-            image: "/faq/music.jpg",
+            image: "/FAQS/music.jpg",
             link: "#"
         },
         {
             text: "What makes this different?",
             answer: "While we check global catalogs, Viltrumite maintains a specialized, high-fidelity database focused on Pakistani and regional music. We index indie tracks and local classics that are often missing from mainstream platforms.",
-            image: "/faq/database.jpg",
+            image: "/FAQS/database.jpg",
             link: "#"
         },
         {
             text: "Is my data private?",
             answer: "Absolutely. We do not store your recorded audio samples. We only process the anonymous fingerprint data to perform the lookup, and then discard the sample immediately. Your listening history is private to you.",
-            image: "/faq/privacy.jpg",
+            image: "/FAQS/privacy.jpg",
             link: "#"
         }
     ];

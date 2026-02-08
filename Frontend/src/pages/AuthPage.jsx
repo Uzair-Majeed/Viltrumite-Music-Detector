@@ -34,7 +34,7 @@ const AuthPage = ({ onAuthSuccess, onNotify }) => {
                 localStorage.setItem('viltrumite_token', data.token);
                 localStorage.setItem('viltrumite_user', JSON.stringify(data.user));
                 onAuthSuccess(data.user);
-                navigate('/library');
+                navigate('/');
             } else {
                 onNotify({
                     type: 'error',
@@ -178,7 +178,7 @@ const AuthPage = ({ onAuthSuccess, onNotify }) => {
             >
                 <div className="absolute inset-0 overflow-hidden">
                     <img
-                        src="/sidepicture.jpg"
+                        src="/SideImages/Signin.jpg"
                         alt="Music Visualization"
                         className="w-full h-full object-cover"
                     />

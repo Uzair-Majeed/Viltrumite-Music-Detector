@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Youtube, Send, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Music, Send, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 
 const ManualIndexer = ({ onNotify }) => {
     const [url, setUrl] = useState('');
@@ -7,12 +7,12 @@ const ManualIndexer = ({ onNotify }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCustomGenre, setIsCustomGenre] = useState(false);
 
-    const genres = ['All','Pop','Hip-Hop','Anime','Rap','Phonk','R&B','Jazz','Blues','Classical','Electronic','Dance','EDM','House','Techno','Trance','Dubstep','Drum & Bass','Reggae','Latin','K-Pop','Indie'];
+    const genres = ['Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'R&B', 'Jazz'];
 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!url) return;
+        if (!url || !selectedGenre) return;
 
         const token = localStorage.getItem('viltrumite_token');
         const genreToSend = selectedGenre || "User Contributed";
@@ -57,10 +57,10 @@ const ManualIndexer = ({ onNotify }) => {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto mt-12 p-8 rounded-3xl border border-white/5 bg-white/5 backdrop-blur-2xl shadow-2xl">
+        <div className="w-full">
             <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 rounded-2xl bg-gradient-to-br from-[#8b5cf6] to-[#ec4899] shadow-lg">
-                    <Youtube className="w-6 h-6 text-white" />
+                <div className="p-3 rounded-2xl shadow-lg">
+                    <Music className="w-6 h-6 text-white" />
                 </div>
                 <div>
                     <h3 className="text-xl font-bold text-white tracking-tight">Didn't find your match?</h3>
@@ -83,7 +83,7 @@ const ManualIndexer = ({ onNotify }) => {
                 {/* Genre Tags */}
                 <div>
                     <label className="text-xs font-bold text-[#94a3b8] uppercase tracking-widest mb-3 block">
-                        Select Genre (Optional)
+                        Select Genre (Required)
                     </label>
                     <div className="flex flex-wrap gap-2">
                         {genres.map(g => (
@@ -95,8 +95,8 @@ const ManualIndexer = ({ onNotify }) => {
                                     setIsCustomGenre(false);
                                 }}
                                 className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${selectedGenre === g && !isCustomGenre
-                                        ? 'bg-[#8b5cf6] border-[#8b5cf6] text-white shadow-lg shadow-purple-500/20'
-                                        : 'bg-white/5 border-white/5 text-[#94a3b8] hover:bg-white/10 hover:text-white'
+                                    ? 'bg-[#8b5cf6] border-[#8b5cf6] text-white shadow-lg shadow-purple-500/20'
+                                    : 'bg-white/5 border-white/5 text-[#94a3b8] hover:bg-white/10 hover:text-white'
                                     }`}
                             >
                                 {g}
@@ -109,8 +109,8 @@ const ManualIndexer = ({ onNotify }) => {
                                 setIsCustomGenre(true);
                             }}
                             className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isCustomGenre
-                                    ? 'bg-[#ec4899] border-[#ec4899] text-white shadow-lg shadow-pink-500/20'
-                                    : 'bg-white/5 border-white/5 text-[#94a3b8] hover:bg-white/10 hover:text-white'
+                                ? 'bg-[#ec4899] border-[#ec4899] text-white shadow-lg shadow-pink-500/20'
+                                : 'bg-white/5 border-white/5 text-[#94a3b8] hover:bg-white/10 hover:text-white'
                                 }`}
                         >
                             Custom +
@@ -129,10 +129,10 @@ const ManualIndexer = ({ onNotify }) => {
                     )}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-center">
                     <button
                         type="submit"
-                        disabled={isSubmitting || !url}
+                        disabled={isSubmitting || !url || !selectedGenre}
                         className="py-3 px-8 rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#ec4899] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
                     >
                         {isSubmitting ? (

@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
-import './FlowingMenu.css'; // Reusing the same CSS
+import './css/FlowingMenu.css'; // Reusing the same CSS
 
 function InteractiveFlowingMenu({
     items = [],

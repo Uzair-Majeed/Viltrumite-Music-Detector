@@ -1,242 +1,206 @@
 #!/usr/bin/env python3
-"""
-YouTube Song Auto-Indexer
-Downloads songs from YouTube, fingerprints them, stores in database, and cleans up files.
-"""
-
 import os
 import sys
 import argparse
 import subprocess
+import json
+import hashlib
 from pathlib import Path
 
-# Add current directory to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-# Add necessary paths for internal imports
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Preprocessing'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Core'))
+# Fix path injections to find Core and Preprocessing modules
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+sys.path.append(os.path.join(current_dir, '..', 'Core'))
+sys.path.append(os.path.join(current_dir, '..', 'Preprocessing'))
 
 from processor import AudioProcessor
 from fingerprinter import Fingerprinter
 from database import DatabaseHandler
 
 class YouTubeIndexer:
-    def __init__(self, db_path="songs.db", temp_dir="temp_downloads", genre="Unknown"):
+    def __init__(self, db_path=None, temp_dir=None, genre="Unknown", skip_duplicates=True, cookies=None):
+        # Default paths relative to this script
+        if db_path is None:
+            db_path = os.path.join(current_dir, '..', '..', 'Databases', 'songs.db')
+        if temp_dir is None:
+            temp_dir = os.path.join(current_dir, '..', 'temp_downloads')
+            
         self.processor = AudioProcessor()
         self.fingerprinter = Fingerprinter()
         self.db = DatabaseHandler(db_path)
         self.temp_dir = temp_dir
         self.genre = genre
+        self.skip_duplicates = skip_duplicates
+        self.cookies_path = cookies
         
-        # Create temp directory
-        Path(self.temp_dir).mkdir(exist_ok=True)
-    
+        # Ensure temp directory exists
+        Path(self.temp_dir).mkdir(exist_ok=True, parents=True)
+        
+        # Standard robust headers for bot bypass
+        self.headers = [
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            '--force-overwrites',
+            '--no-check-certificates',
+            '--impersonate', 'chrome-110',
+            '--extractor-args', 'youtube:player-client=web,default;player-skip=web_embedded_client,mweb_benchmark'
+        ]
+        if self.cookies_path:
+            self.headers.extend(['--cookies', self.cookies_path])
+
+    def _run_ytdlp(self, args, quiet=False):
+        """Helper to run yt-dlp using the current python interpreter to ensure venv usage"""
+        cmd = [sys.executable, '-m', 'yt_dlp'] + self.headers + args
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0 and not quiet:
+            print(f"[!] yt-dlp Error:")
+            print(f"    {result.stderr.strip()}")
+        return result
+
     def download_audio(self, url):
-        """
-        Downloads audio from YouTube URL using yt-dlp.
-        Returns tuple (file_path, thumbnail_url, title, artist), or (None, None, None, None) on failure.
-        """
+        """Downloads audio and returns (file_path, thumbnail, title, artist)"""
         try:
-            print(f"Downloading from: {url}")
-            
-            # Step 1: Get Metadata (Thumbnail, Title, Artist)
-            print(f"Fetching metadata for: {url}")
-            # we want thumbnail, title, uploader
-            cmd_meta = [
-                'yt-dlp',
-                '--print', '%(thumbnail)s\n%(title)s\n%(uploader)s', # Output each on a new line
-                '--simulate',
-                '--no-playlist',
-                url
-            ]
-            
-            meta_result = subprocess.run(cmd_meta, capture_output=True, text=True)
-            thumbnail_url = None
-            title = None
-            artist = "Unknown"
-            
-            if meta_result.returncode == 0:
-                lines = meta_result.stdout.strip().split('\n')
-                if len(lines) >= 1: thumbnail_url = lines[0]
-                if len(lines) >= 2: title = lines[1]
-                if len(lines) >= 3: artist = lines[2]
-            
-            # Step 2: Download Audio
-            # Use absolute path to ensure yt-dlp writes where we expect
-            abs_temp_dir = os.path.abspath(self.temp_dir)
-            # Use video ID in filename to handle special chars
-            output_template = os.path.join(abs_temp_dir, '%(id)s.%(ext)s')
-            
-            cmd_download = [
-                'yt-dlp',
-                '-f', 'bestaudio',      # Best quality audio
-                '-o', output_template,
-                '--no-playlist',
-                '--no-cache-dir',       # Prevent caching issues
-                url
-            ]
-            
-            print(f"Downloading audio...")
-            result = subprocess.run(cmd_download, capture_output=True, text=True)
+            print(f"[*] Metadata: {url}")
+            # Try to get metadata. If it fails due to bot detection, advise cookies.
+            meta_cmd = ['--print', '%(thumbnail)s\n%(title)s\n%(uploader)s', '--simulate', '--no-playlist', url]
+            result = self._run_ytdlp(meta_cmd)
             
             if result.returncode != 0:
-                print(f"Error downloading: {result.stderr}")
+                if "bot" in result.stderr or "confirm you're not a bot" in result.stderr:
+                    print("\n[!] YouTube detected a bot request.")
+                    print("[!] TIP: Export cookies from your browser to a 'cookies.txt' file and use --cookies cookies.txt")
                 return None, None, None, None
-                
-            # Find the downloaded file
-            extensions = ['*.mp3', '*.webm', '*.m4a', '*.wav', '*.flac']
-            audio_files = []
-            for ext in extensions:
-                found = list(Path(self.temp_dir).glob(ext))
-                audio_files.extend(found)
             
-            if audio_files:
-                # Return the most recently created file
-                latest_file = max(audio_files, key=lambda p: p.stat().st_mtime)
-                return str(latest_file), thumbnail_url, title, artist
+            lines = result.stdout.strip().split('\n')
+            thumbnail, title, artist = None, "Unknown", "Unknown"
+            if len(lines) >= 1: thumbnail = lines[0]
+            if len(lines) >= 2: title = lines[1]
+            if len(lines) >= 3: artist = lines[2]
+
+            # Use video ID in filename
+            video_id_cmd = ['--get-id', url]
+            id_result = self._run_ytdlp(video_id_cmd, quiet=True)
+            video_id = id_result.stdout.strip() if id_result.returncode == 0 else hashlib.md5(url.encode()).hexdigest()
+
+            output_template = os.path.join(os.path.abspath(self.temp_dir), f'{video_id}.%(ext)s')
+            dl_cmd = ['-f', 'bestaudio', '-o', output_template, '--no-playlist', '--no-cache-dir', url]
+            
+            print(f"[*] Downloading audio...")
+            self._run_ytdlp(dl_cmd)
+            
+            # Find the file
+            for ext in ['mp3', 'webm', 'm4a', 'wav', 'opus']:
+                files = list(Path(self.temp_dir).glob(f"{video_id}.{ext}"))
+                if files:
+                    return str(files[0]), thumbnail, title, artist
             
             return None, None, None, None
-            
         except Exception as e:
-            print(f"Exception during download: {e}")
+            print(f"[!] Download Error: {e}")
             return None, None, None, None
-    
-    def process_and_index(self, file_path, url=None, genre="Unknown", thumbnail=None, title=None, artist="Unknown"):
-        """
-        Fingerprints a song and adds it to the database.
-        Returns True on success, False on failure.
-        """
+
+    def is_duplicate(self, title, artist, fingerprints=None):
+        """Check for existing song via title or audio fingerprints"""
+        if not self.skip_duplicates:
+            return False, None
+            
+        # 1. Title Similarity
+        similar = self.db.find_similar_title(title, artist, threshold=0.85)
+        if similar:
+            return True, f"Title Match ({similar[0][3]:.2f})"
+            
+        # 2. Audio Fingerprint Similarity
+        if fingerprints:
+            is_dup, dup_id, ratio = self.db.check_fingerprint_similarity(fingerprints, threshold=0.6)
+            if is_dup:
+                return True, f"Audio Match ({ratio:.2%})"
+                
+        return False, None
+
+    def process_and_index(self, url, genre=None):
+        """Standard workflow: Download -> Duplicate Check -> Index -> Cleanup"""
+        genre = genre or self.genre
+        file_path, thumb, title, artist = self.download_audio(url)
+        
+        if not file_path:
+            return False
+            
         try:
-            # If title/artist not provided (e.g. from file download), fallback to filename
-            if not title:
-                filename = os.path.basename(file_path)
-                title = os.path.splitext(filename)[0]
-            
-            # Filename is still needed for DB/storage ref (even if we use ID-based filename)
-            filename = os.path.basename(file_path)
-            
-            print(f"Processing: {title} by {artist}")
-            
-            # 1. Load Audio
+            print(f"[*] Processing: {title}")
             y, sr = self.processor.load_audio(file_path)
-            if y is None:
-                print("  Failed to load audio")
-                return False
+            if y is None: return False
             
-            # 2. Generate Fingerprints
             spec = self.processor.get_spectrogram(y)
             peaks = self.fingerprinter.get_2d_peaks(spec)
             hashes = self.fingerprinter.generate_hashes(peaks)
             
-            if not hashes:
-                print("  Warning: No fingerprints generated")
+            # Verify duplicates with fingerprints
+            dup, reason = self.is_duplicate(title, artist, hashes)
+            if dup:
+                print(f"[-] Skipped: {reason}")
                 return False
-            
-            # 3. Store in Database
-            song_id = self.db.add_song(title, artist, filename, genre=genre, url=url, thumbnail=thumbnail)
-            
+
+            song_id = self.db.add_song(title, artist, os.path.basename(file_path), genre=genre, url=url, thumbnail=thumb)
             if song_id:
                 self.db.store_fingerprints(song_id, hashes)
-                print(f"  ✓ Indexed! Song ID: {song_id}, Fingerprints: {len(hashes)}, Genre: {genre}")
+                print(f"  ✓ Indexed! (ID: {song_id}, Hashes: {len(hashes)})")
                 return True
-            else:
-                print("  Skipped (already exists?)")
-                return False
-                
-        except Exception as e:
-            print(f"  Error processing: {e}")
             return False
-    
-    def cleanup_file(self, file_path):
-        """Removes the audio file to save space."""
-        try:
-            if os.path.exists(file_path):
+        finally:
+            if file_path and os.path.exists(file_path):
                 os.remove(file_path)
-                print(f"  ✓ Cleaned up: {os.path.basename(file_path)}")
-        except Exception as e:
-            print(f"  Warning: Could not delete {file_path}: {e}")
-    
-    def index_from_url(self, url, genre=None):
-        """
-        Complete workflow: Download -> Fingerprint -> Store -> Delete
-        """
-        if genre is None:
-            genre = self.genre
+
+    def index_playlist(self, url, genre=None, start=None, end=None):
+        range_str = f" (Range: {start}-{end})" if start or end else ""
+        print(f"[*] Extracting playlist: {url}{range_str}")
         
-        print(f"\n{'='*60}")
-        print(f"Processing URL: {url}")
-        print(f"{'='*60}")
+        cmd = ['--flat-playlist', '--print', 'url']
+        if start: cmd.extend(['--playlist-start', str(start)])
+        if end: cmd.extend(['--playlist-end', str(end)])
+        cmd.append(url)
         
-        # 1. Download
-        file_path, thumbnail_url, title, artist = self.download_audio(url)
-        if not file_path:
-            print("✗ Download failed\n")
-            return False
+        result = self._run_ytdlp(cmd)
         
-        # 2. Process and Index
-        success = self.process_and_index(file_path, url=url, genre=genre, thumbnail=thumbnail_url, title=title, artist=artist)
+        urls = [u.strip() for u in result.stdout.strip().split('\n') if u.strip()]
+        print(f"[*] Found {len(urls)} songs. Starting ingestion...")
         
-        # 3. Cleanup (regardless of success/failure)
-        self.cleanup_file(file_path)
+        success = 0
+        for i, video_url in enumerate(urls, 1):
+            print(f"\n[{i}/{len(urls)}] Ingesting...")
+            if self.process_and_index(video_url, genre):
+                success += 1
+        print(f"\n[!] Done! Successfully indexed {success}/{len(urls)} songs.")
+
+    def index_search(self, query, limit=10, genre=None):
+        print(f"[*] Searching YouTube: {query}")
+        cmd = ['--flat-playlist', '--print', 'url', f'ytsearch{limit}:{query}']
+        result = self._run_ytdlp(cmd)
         
-        if success:
-            print("✓ Successfully indexed and cleaned up\n")
-        else:
-            print("✗ Indexing failed\n")
-        
-        return success
-    
-    def index_from_file(self, file_path):
-        """
-        Read URLs from a text file (one per line) and index them all.
-        """
-        if not os.path.exists(file_path):
-            print(f"Error: File {file_path} not found")
-            return
-        
-        try:
-            with open(file_path, 'r') as f:
-                urls = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-            
-            print(f"Found {len(urls)} URLs to process\n")
-            
-            success_count = 0
-            for i, url in enumerate(urls, 1):
-                print(f"\n[{i}/{len(urls)}]")
-                if self.index_from_url(url):
-                    success_count += 1
-            
-            print(f"\n{'='*60}")
-            print(f"Summary: {success_count}/{len(urls)} songs successfully indexed")
-            print(f"{'='*60}")
-            
-        except Exception as e:
-            print(f"Error processing file: {e}")
+        urls = [u.strip() for u in result.stdout.strip().split('\n') if u.strip()]
+        for i, video_url in enumerate(urls, 1):
+            print(f"\n[{i}/{len(urls)}] Ingesting search result...")
+            self.process_and_index(video_url, genre)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="YouTube Song Auto-Indexer for Viltrumite",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Index a single song from YouTube
-  python youtube_indexer.py --url "https://www.youtube.com/watch?v=VIDEO_ID"
-  
-  # Index multiple songs from a text file (one URL per line)
-  python youtube_indexer.py --file urls.txt
-        """
-    )
-    
+    parser = argparse.ArgumentParser(description="Unified Viltrumite YouTube Indexer")
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--url', help='Single YouTube URL to download and index')
-    group.add_argument('--file', help='Text file containing YouTube URLs (one per line)')
+    group.add_argument('--url', help='Single video URL')
+    group.add_argument('--playlist', help='Playlist or Channel URL')
+    group.add_argument('--search', help='Search query')
+    
+    parser.add_argument('--genre', default='Unknown', help='Genre tag')
+    parser.add_argument('--start', type=int, help='Playlist start index (optional)')
+    parser.add_argument('--end', type=int, help='Playlist end index (optional)')
+    parser.add_argument('--limit', type=int, default=10, help='Search limit (default: 10)')
+    parser.add_argument('--db', help='Custom database path')
+    parser.add_argument('--cookies', help='Path to cookies.txt file')
+    parser.add_argument('--no-skip', action='store_false', dest='skip', help='Disable duplicate detection')
     
     args = parser.parse_args()
-    
-    indexer = YouTubeIndexer()
+    indexer = YouTubeIndexer(db_path=args.db, genre=args.genre, skip_duplicates=args.skip, cookies=args.cookies)
     
     if args.url:
-        indexer.index_from_url(args.url)
-    elif args.file:
-        indexer.index_from_file(args.file)
+        indexer.process_and_index(args.url)
+    elif args.playlist:
+        indexer.index_playlist(args.playlist, start=args.start, end=args.end)
+    elif args.search:
+        indexer.index_search(args.search, limit=args.limit)

@@ -3,8 +3,7 @@ const { PATHS } = require('../config');
 
 const getStats = async (req, res) => {
     try {
-        const result = await runPythonScript(PATHS.PYTHON_BIN, [
-            '-c',
+        const result = await runPythonScript('-c', [
             `
 import sys
 sys.path.append('${PATHS.AI_MODULE_CORE}')
@@ -35,8 +34,7 @@ const getAllSongs = async (req, res) => {
     const search = req.query.search || '';
 
     try {
-        const result = await runPythonScript(PATHS.PYTHON_BIN, [
-            '-c',
+        const result = await runPythonScript('-c', [
             `
 import sys
 import json

@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import './Lightning.css';
+import './css/Lightning.css';
 
 const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 }) => {
   const canvasRef = useRef(null);

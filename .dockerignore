@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+Tests
+AI-Module/venv
+AI-Module/__pycache__
+*.pyc
+.DS_Store
+.env
+.npm
+Documentation
+brain

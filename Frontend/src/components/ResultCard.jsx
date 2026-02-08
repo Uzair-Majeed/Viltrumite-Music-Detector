@@ -69,9 +69,20 @@ const ResultCard = ({ result }) => {
 
                     <div className="flex-1 space-y-4 pt-1">
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight">
-                                {bestMatch.title}
-                            </h2>
+                            <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start">
+                                <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight">
+                                    {bestMatch.title}
+                                </h2>
+                                {bestMatch.is_shazam_match ? (
+                                    <span className="px-2 py-0.5 rounded-md bg-[#0088ff20] border border-[#0088ff40] text-[10px] font-bold text-[#0088ff] uppercase tracking-tighter">
+                                        Global Discovery
+                                    </span>
+                                ) : (
+                                    <span className="px-2 py-0.5 rounded-md bg-[#22c55e20] border border-[#22c55e40] text-[10px] font-bold text-[#22c55e] uppercase tracking-tighter">
+                                        Library Match
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-xl text-[#ec4899] font-medium mt-1">{bestMatch.artist}</p>
                         </div>
 
@@ -80,7 +91,7 @@ const ResultCard = ({ result }) => {
                                 {bestMatch.genre || 'Unknown Genre'}
                             </span>
                             <span className="px-3 py-1 rounded-full bg-[#1e293b] border border-white/5 text-xs font-medium text-[#94a3b8]">
-                                ID: {bestMatch.song_id}
+                                ID: {bestMatch.song_id || 'N/A'}
                             </span>
                         </div>
 
@@ -117,7 +128,14 @@ const ResultCard = ({ result }) => {
                                         {i + 2}
                                     </div>
                                     <div className="text-left">
-                                        <p className="font-medium text-white group-hover:text-[#ec4899] transition-colors">{match.title}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-medium text-white group-hover:text-[#ec4899] transition-colors">{match.title}</p>
+                                            {match.is_shazam_match ? (
+                                                <span className="px-1.5 py-0.25 rounded bg-[#0088ff10] border border-[#0088ff30] text-[8px] font-bold text-[#0088ff] uppercase">Global</span>
+                                            ) : (
+                                                <span className="px-1.5 py-0.25 rounded bg-[#22c55e10] border border-[#22c55e30] text-[8px] font-bold text-[#22c55e] uppercase">Library</span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-[#94a3b8]">{match.artist}</p>
                                     </div>
                                 </div>

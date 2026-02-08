@@ -32,4 +32,17 @@ app.use((error, req, res, next) => {
     });
 });
 
+// Startup Logs
+console.log('\x1b[36m%s\x1b[0m', '-------------------------------------------');
+console.log('\x1b[35m%s\x1b[0m', '🚀 Viltrumite API Initialization...');
+console.log('\x1b[36m%s\x1b[0m', '-------------------------------------------');
+console.log('Available Endpoints:');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ POST /api/auth/register - User registration');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ POST /api/auth/login    - User login');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ GET  /api/auth/me       - Get current user info');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ GET  /api/stats         - Database statistics');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ GET  /api/songs         - List all indexed songs');
+console.log('\x1b[32m%s\x1b[0m', '  ✅ POST /api/recognize     - Song recognition (Multipart)');
+console.log('\x1b[36m%s\x1b[0m', '-------------------------------------------');
+
 module.exports = app;

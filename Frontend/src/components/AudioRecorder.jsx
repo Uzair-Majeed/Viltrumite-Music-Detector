@@ -80,7 +80,7 @@ const AudioRecorder = ({ onResult }) => {
 
         } catch (err) {
             console.error("Error accessing microphone:", err);
-            alert("Could not access microphone");
+            onResult({ success: false, error: "Could not access microphone. Please check permissions." });
         }
     };
 

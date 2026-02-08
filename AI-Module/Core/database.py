@@ -168,8 +168,8 @@ class DatabaseHandler:
         params = []
         
         if genre and genre.lower() != 'all':
-            query += " AND genre LIKE ?"
-            params.append(f"%{genre}%")
+            query += " AND LOWER(genre) = LOWER(?)"
+            params.append(genre)
             
         if search:
             query += " AND (title LIKE ? OR artist LIKE ? OR genre LIKE ?)"

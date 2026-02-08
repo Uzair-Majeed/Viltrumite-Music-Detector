@@ -18,8 +18,25 @@ const Recognition = ({ user, onNotify }) => {
     const handleResult = (data) => {
         setResult(data);
 
+        // Show toast if no match found or error occurred
+        if (data) {
+            if (!data.success) {
+                onNotify({
+                    type: 'error',
+                    message: data.error || 'Recognition failed. Please try again.',
+                    duration: 5000
+                });
+            } else if (!data.match_found) {
+                onNotify({
+                    type: 'error',
+                    message: 'Nothing found. Try listening for longer periods to get better results!',
+                    duration: 6000
+                });
+            }
+        }
+
         // Handle guest limit
-        if (!user) {
+        if (!user && data) {
             const newCount = guestCount + 1;
             setGuestCount(newCount);
             localStorage.setItem('viltrumite_guest_count', newCount.toString());
@@ -62,7 +79,7 @@ const Recognition = ({ user, onNotify }) => {
                 <div className="text-center space-y-4 mb-12">
                     <h1 className="text-5xl font-black text-white tracking-tighter">Audio Analysis</h1>
                     <p className="text-[#94a3b8] max-w-xl mx-auto">
-                        Identify tracks using our dual-mode recognition engine.
+                        Identify tracks using our audio fingerprinting recognition engine.
                         {!user && (
                             <span className="block mt-2 text-[#06b6d4] font-bold">
                                 Guest uses: {guestCount}/3

@@ -6,14 +6,12 @@ import FlowingMenu from '../components/FlowingMenu';
 
 const Home = () => {
     const genreItems = [
-        { link: '/library?genre=Pop', text: 'Pop Hits', image: '/pop.webp' },
-        { link: '/library?genre=Hip-Hop', text: 'Hip-Hop Beats', image: '/rap.jpg' },
-        { link: '/library?genre=Phonk', text: 'Phonk Beats', image: '/phonk.jpg' },
-        { link: '/library?genre=Anime', text: 'Anime Soundtracks', image: '/anime' },
-        { link: '/library?genre=Jazz', text: 'Jazz', image: '/jazz.webp' }
+        { link: '/library?genre=Pop', text: 'Pop Hits', image: '/Genres/pop.webp' },
+        { link: '/library?genre=Hip-Hop', text: 'Hip-Hop Beats', image: '/Genres/rap.jpg' },
+        { link: '/library?genre=Phonk', text: 'Phonk Beats', image: '/Genres/phonk.jpg' },
+        { link: '/library?genre=Anime', text: 'Anime Soundtracks', image: '/Genres/anime' },
+        { link: '/library?genre=Jazz', text: 'Jazz', image: '/Genres/jazz.webp' }
     ];
-
-        const genres = ['All','Pop','Hip-Hop','Anime','Rap','Phonk','R&B','Jazz','Blues','Classical','Electronic','Dance','EDM','House','Techno','Trance','Dubstep','Drum & Bass','Reggae','Latin','K-Pop','Indie'];
 
     return (
         <div className="pt-24 min-h-screen relative">
@@ -89,7 +87,7 @@ const Home = () => {
                     >
                         <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border border-white/10 group">
                             <img
-                                src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop"
+                                src="/SideImages/Home.jpeg"
                                 alt="Music Tech"
                                 className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                             />
