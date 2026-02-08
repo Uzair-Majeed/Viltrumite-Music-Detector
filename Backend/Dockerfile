@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Create necessary directories
+RUN mkdir -p Databases uploads AI-Module/temp_downloads
+
 # Copy dependency files first for caching
 COPY Backend/package*.json ./Backend/
 COPY AI-Module/requirements.txt ./AI-Module/
@@ -36,6 +39,9 @@ ENV PYTHON_BIN=python3
 ENV AI_MODULE_CORE=/app/AI-Module/Core
 ENV PYTHON_FALLBACK=/app/AI-Module/Inference/fallback.py
 ENV PYTHON_USER_ADDER=/app/AI-Module/Training/user_adder.py
+
+# Explicitly indicate volume paths for persistence
+VOLUME ["/app/Databases"]
 
 EXPOSE 3000
 
