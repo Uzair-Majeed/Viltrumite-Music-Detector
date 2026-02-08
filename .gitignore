@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Python
+AI-Module/venv/
+__pycache__/
+*.py[cod]
+*$py.class
+AI-Module/temp_downloads/
+
+# Databases & Sensitive Data
+Databases/
+*.db
+.env
+auth_token.json
+
+# Logs & temp
+*.log
+uploads/
+temp/
+
+# OS/System
+.DS_Store
+Thumbs.db

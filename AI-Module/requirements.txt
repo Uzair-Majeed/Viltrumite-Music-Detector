@@ -1,0 +1,9 @@
+numpy
+scipy
+librosa
+matplotlib
+pydub
+ffmpeg-python
+yt-dlp
+spotipy
+shazamio
