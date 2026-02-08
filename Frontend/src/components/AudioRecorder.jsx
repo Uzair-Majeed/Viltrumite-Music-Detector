@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Loader2, Music } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AudioVisualizer from './AudioVisualizer';
+import API_URL from '../config/api';
 
 const LOADING_MESSAGES = [
     "Listening to the beat...",
@@ -109,7 +110,7 @@ const AudioRecorder = ({ onResult }) => {
         formData.append('audio', blob, 'recording.webm');
 
         try {
-            const response = await fetch('/api/recognize', {
+            const response = await fetch(`${API_URL}/api/recognize`, {
                 method: 'POST',
                 body: formData,
             });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Music, Send, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import API_URL from '../config/api';
 
 const ManualIndexer = ({ onNotify }) => {
     const [url, setUrl] = useState('');
@@ -19,7 +20,7 @@ const ManualIndexer = ({ onNotify }) => {
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/manual-index', {
+            const response = await fetch(`${API_URL}/api/manual-index`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

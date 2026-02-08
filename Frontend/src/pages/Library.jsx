@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Library as LibraryIcon, ChevronLeft, ChevronRight, Youtube } from 'lucide-react';
 import Lightning from '../components/Lightning';
 import ScrollStack, { ScrollStackItem } from '../components/ScrollStack';
+import API_URL from '../config/api';
 
 const ScrollStackSkeleton = () => (
     <div className="max-w-4xl mx-auto space-y-8 py-20">
@@ -67,7 +68,7 @@ const Library = () => {
         setLoading(true);
         const offset = (page - 1) * limit;
         try {
-            const response = await fetch(`/api/songs?limit=${limit}&offset=${offset}&genre=${encodeURIComponent(selectedGenre)}&search=${encodeURIComponent(searchQuery)}`);
+            const response = await fetch(`${API_URL}/api/songs?limit=${limit}&offset=${offset}&genre=${encodeURIComponent(selectedGenre)}&search=${encodeURIComponent(searchQuery)}`);
             const data = await response.json();
 
             // Only update state if this is still the latest fetch
@@ -258,4 +259,3 @@ const Library = () => {
 };
 
 export default Library;
-

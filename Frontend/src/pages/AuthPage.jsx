@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, User, ArrowRight, Loader2, Music } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import LightRays from '../components/LightRays';
+import API_URL from '../config/api';
 
 const AuthPage = ({ onAuthSuccess, onNotify }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -18,7 +19,7 @@ const AuthPage = ({ onAuthSuccess, onNotify }) => {
         e.preventDefault();
         setLoading(true);
 
-        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
+        const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/signup`;
         const payload = isLogin ? { email, password } : { name, email, password };
 
         try {
