@@ -103,7 +103,7 @@ const Library = () => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const genres = ['All', 'Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'R&B', 'Jazz', 'Blues', 'Classical', 'Electronic', 'Dance', 'EDM', 'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Reggae', 'Latin', 'K-Pop', 'Indie'];
+    const genres = ['All', 'Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'K-Pop', 'Classical', 'Jazz'];
 
     const totalPages = Math.ceil(stats.total / limit);
 

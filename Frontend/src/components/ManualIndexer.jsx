@@ -8,7 +8,7 @@ const ManualIndexer = ({ onNotify }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCustomGenre, setIsCustomGenre] = useState(false);
 
-    const genres = ['Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'R&B', 'Jazz'];
+    const genres = ['All', 'Pop', 'Hip-Hop', 'Anime', 'Rap', 'Phonk', 'K-Pop', 'Classical', 'Jazz'];
 
 
     const handleSubmit = async (e) => {

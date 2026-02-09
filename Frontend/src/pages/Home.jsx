@@ -10,7 +10,7 @@ const Home = () => {
         { link: '/library?genre=Hip-Hop', text: 'Hip-Hop Beats', image: '/Genres/rap.jpg' },
         { link: '/library?genre=Phonk', text: 'Phonk Beats', image: '/Genres/phonk.jpg' },
         { link: '/library?genre=Anime', text: 'Anime Soundtracks', image: '/Genres/anime' },
-        { link: '/library?genre=Jazz', text: 'Jazz', image: '/Genres/jazz.webp' }
+        { link: '/library?genre=Classical', text: 'Classical', image: '/Genres/classical.webp' }
     ];
 
     return (

@@ -13,7 +13,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import FAQ from './pages/FAQ';
 import AuthPage from './pages/AuthPage';
-import BackgroundTest from './pages/background-test';
 import SubmissionPage from './pages/SubmissionPage';
 
 function App() {
@@ -82,8 +81,6 @@ function App() {
 
           <Route path="/login" element={<AuthPage onAuthSuccess={handleAuthSuccess} onNotify={handleNotify} />} />
           <Route path="/signup" element={<AuthPage onAuthSuccess={handleAuthSuccess} onNotify={handleNotify} />} />
-          <Route path="/test-background" element={<BackgroundTest />} />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
